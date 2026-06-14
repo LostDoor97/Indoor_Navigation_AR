@@ -1,0 +1,7 @@
+{
+  "nodes": [
+    {"id": "QR_ENTREE", "name": "Entrée du Couloir", "x": 0.0, "z": 0.0},
+    {"id": "VIRAGE_A", "name": "Intersection A", "x": 0.0, "z": 5.0},
+    {"id": "BUR_101", "name": "Bureau 101", "x": 3.0, "z": 5.0}
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "Version": "1.0",
+  "BuildingName": "Sample Building - Floor 1",
+  "GraphMetadata": {
+    "CreatedDate": "2025-06-13",
+    "Author": "Navigation System",
+    "Floor": "1",
+    "Area": "Main Corridor"
+  },
+  "Nodes": [
+    {
+      "Id": "entrance",
+      "Name": "Main Entrance",
+      "Position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "MarkerId": "QR_ENTRANCE",
+      "IsPointOfInterest": true,
+      "Category": "Entrance",
+      "Metadata": {
+        "Description": "Main building entrance",
+        "Floor": "1"
+      },
+      "ConnectedNodeIds": ["corridor_a"],
+      "EdgeCosts": [5.0]
+    },
+    {
+      "Id": "corridor_a",
+      "Name": "Main Corridor A",
+      "Position": {
+        "x": 5.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "MarkerId": "QR_CORRIDOR_A",
+      "IsPointOfInterest": false,
+      "Category": "",
+      "Metadata": {},
+      "ConnectedNodeIds": ["entrance", "intersection_1", "office_101"],
+      "EdgeCosts": [5.0, 10.0, 3.0]
+    },
+    {
+      "Id": "intersection_1",
+      "Name": "Intersection 1",
+      "Position": {
+        "x": 15.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "MarkerId": "QR_INTERSECTION_1",
+      "IsPointOfInterest": false,
+      "Category": "",
+      "Metadata": {},
+      "ConnectedNodeIds": ["corridor_a", "corridor_b", "restroom_1"],
+      "EdgeCosts": [10.0, 8.0, 2.0]
+    },
+    {
+      "Id": "corridor_b",
+      "Name": "Corridor B",
+      "Position": {
+        "x": 15.0,
+        "y": 0.0,
+        "z": 8.0
+      },
+      "MarkerId": "QR_CORRIDOR_B",
+      "IsPointOfInterest": false,
+      "Category": "",
+      "Metadata": {},
+      "ConnectedNodeIds": ["intersection_1", "office_201", "office_202"],
+      "EdgeCosts": [8.0, 3.0, 5.0]
+    },
+    {
+      "Id": "office_101",
+      "Name": "Office 101",
+      "Position": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 3.0
+      },
+      "MarkerId": "QR_OFFICE_101",
+      "IsPointOfInterest": true,
+      "Category": "Office",
+      "Metadata": {
+        "Description": "Conference room",
+        "Capacity": "10"
+      },
+      "ConnectedNodeIds": ["corridor_a"],
+      "EdgeCosts": [3.0]
+    },
+    {
+      "Id": "office_201",
+      "Name": "Office 201",
+      "Position": {
+        "x": 18.0,
+        "y": 0.0,
+        "z": 8.0
+      },
+      "MarkerId": "QR_OFFICE_201",
+      "IsPointOfInterest": true,
+      "Category": "Office",
+      "Metadata": {
+        "Description": "Manager office",
+        "Floor": "1"
+      },
+      "ConnectedNodeIds": ["corridor_b"],
+      "EdgeCosts": [3.0]
+    },
+    {
+      "Id": "office_202",
+      "Name": "Office 202",
+      "Position": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": 10.0
+      },
+      "MarkerId": "QR_OFFICE_202",
+      "IsPointOfInterest": true,
+      "Category": "Office",
+      "Metadata": {
+        "Description": "Team office",
+        "Floor": "1"
+      },
+      "ConnectedNodeIds": ["corridor_b"],
+      "EdgeCosts": [5.0]
+    },
+    {
+      "Id": "restroom_1",
+      "Name": "Restroom 1",
+      "Position": {
+        "x": 17.0,
+        "y": 0.0,
+        "z": -2.0
+      },
+      "MarkerId": "QR_RESTROOM_1",
+      "IsPointOfInterest": true,
+      "Category": "Facilities",
+      "Metadata": {
+        "Description": "Public restroom",
+        "Accessible": "true"
+      },
+      "ConnectedNodeIds": ["intersection_1"],
+      "EdgeCosts": [2.0]
+    }
+  ]
+}
