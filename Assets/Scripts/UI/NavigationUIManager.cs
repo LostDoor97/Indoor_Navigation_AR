@@ -32,7 +32,7 @@ namespace IndoorNavigation.UI
         [SerializeField] private Button m_CancelNavigationButton;
         [SerializeField] private Button m_RecalibrateButton;
 
-        private List<Navigation.NavigationNode> m_CurrentPOIs;
+        private List<Navigation.NavigationNode> m_CurrentPOIs = new List<Navigation.NavigationNode>();
         private Navigation.NavigationNode m_SelectedDestination;
         private bool m_IsNavigating;
 
@@ -70,6 +70,51 @@ namespace IndoorNavigation.UI
                 m_SearchField.onValueChanged.RemoveListener(OnSearchValueChanged);
         }
 
+        private void Start()
+        {
+            // Force l'activation de l'interface d'accueil
+            ShowMainPanel();
+
+            // SÉCURITÉ / TEST : Si aucune donnée n'est injectée, on crée des points fictifs pour tester sur le téléphone
+            if (m_CurrentPOIs == null || m_CurrentPOIs.Count == 0)
+            {
+                Debug.Log("[Navigation UI] Aucune donnée reçue. Génération de POIs de test...");
+                GenerateMockDestinations();
+            }
+        }
+
+        /// <summary>
+        /// Génère des données de test locales pour valider l'UI sur mobile
+        /// </summary>
+        /// <summary>
+        /// Génère des données de test locales conformes au constructeur pour valider l'UI sur mobile
+        /// </summary>
+        private void GenerateMockDestinations()
+        {
+            List<Navigation.NavigationNode> mockNodes = new List<Navigation.NavigationNode>();
+
+            // Création des nœuds en respectant l'ordre : (Id, Name, Position)
+            var node1 = new Navigation.NavigationNode("id_salle_info", "Salle Informatique 1", Vector3.zero);
+            node1.IsPointOfInterest = true;
+            node1.Category = "Classe";
+
+            var node2 = new Navigation.NavigationNode("id_labo", "Laboratoire R&D", Vector3.forward * 10);
+            node2.IsPointOfInterest = true;
+            node2.Category = "Labo";
+
+            var node3 = new Navigation.NavigationNode("id_cafet", "Cafétéria", Vector3.right * 5);
+            node3.IsPointOfInterest = true;
+            node3.Category = "Commun";
+
+            // Ajout à la liste locale
+            mockNodes.Add(node1);
+            mockNodes.Add(node2);
+            mockNodes.Add(node3);
+
+            // Initialisation et affichage dans la liste de l'interface
+            InitializeDestinationList(mockNodes);
+        }
+
         /// <summary>
         /// Initialize UI with list of destinations
         /// </summary>
@@ -85,6 +130,8 @@ namespace IndoorNavigation.UI
         /// </summary>
         private void RefreshDestinationList(List<Navigation.NavigationNode> pois)
         {
+            if (m_DestinationListContent == null || m_DestinationItemPrefab == null) return;
+
             // Clear existing items
             foreach (Transform child in m_DestinationListContent)
             {
@@ -110,6 +157,10 @@ namespace IndoorNavigation.UI
         {
             m_SelectedDestination = destination;
             OnDestinationSelected?.Invoke(destination);
+
+            // CORRECTION VISUELLE : On met à jour directement le texte de l'UI avec la cible sélectionnée
+            UpdateNavigationDisplay(destination.Name, 0, "Prêt à démarrer");
+
             ShowNavigationConfirmPanel();
         }
 
@@ -118,6 +169,8 @@ namespace IndoorNavigation.UI
         /// </summary>
         private void OnSearchValueChanged(string searchText)
         {
+            if (m_CurrentPOIs == null) return;
+
             if (string.IsNullOrEmpty(searchText))
             {
                 RefreshDestinationList(m_CurrentPOIs);
@@ -125,8 +178,8 @@ namespace IndoorNavigation.UI
             else
             {
                 var filtered = m_CurrentPOIs.FindAll(p =>
-                    p.Name.ToLower().Contains(searchText.ToLower()) ||
-                    p.Category.ToLower().Contains(searchText.ToLower())
+                    (p.Name != null && p.Name.ToLower().Contains(searchText.ToLower())) ||
+                    (p.Category != null && p.Category.ToLower().Contains(searchText.ToLower()))
                 );
                 RefreshDestinationList(filtered);
             }
@@ -141,7 +194,10 @@ namespace IndoorNavigation.UI
             {
                 m_IsNavigating = true;
                 OnNavigationStarted?.Invoke(m_SelectedDestination);
-                UpdateNavigationDisplay();
+
+                // CORRECTION : Envoi des données réelles de la destination pour l'affichage dynamique
+                UpdateNavigationDisplay(m_SelectedDestination.Name, 0, "Calcul de l'itinéraire...");
+
                 ShowNavigationPanel();
                 Debug.Log($"[Navigation UI] Started navigation to {m_SelectedDestination.Name}");
             }
@@ -153,6 +209,7 @@ namespace IndoorNavigation.UI
         private void OnCancelNavigationClicked()
         {
             m_IsNavigating = false;
+            m_SelectedDestination = null;
             OnNavigationCancelled?.Invoke();
             ShowMainPanel();
             Debug.Log("[Navigation UI] Navigation cancelled");
@@ -175,14 +232,15 @@ namespace IndoorNavigation.UI
         /// </summary>
         public void UpdateNavigationDisplay(string destination = null, float distance = 0, string status = "Navigating...")
         {
-            if (m_DestinationNameText != null && destination != null)
+            if (m_DestinationNameText != null && !string.IsNullOrEmpty(destination))
             {
                 m_DestinationNameText.text = destination;
             }
 
-            if (m_DistanceText != null && distance > 0)
+            if (m_DistanceText != null)
             {
-                m_DistanceText.text = $"Distance: {distance:F1}m";
+                // Affiche la distance si elle est supérieure à 0, sinon RAZ du texte
+                m_DistanceText.text = distance > 0 ? $"Distance: {distance:F1}m" : "Distance: -- m";
             }
 
             if (m_StatusText != null)
@@ -207,12 +265,9 @@ namespace IndoorNavigation.UI
         /// </summary>
         private void ShowMainPanel()
         {
-            if (m_MainPanel != null)
-                m_MainPanel.SetActive(true);
-            if (m_DestinationListPanel != null)
-                m_DestinationListPanel.SetActive(true);
-            if (m_NavigationPanel != null)
-                m_NavigationPanel.SetActive(false);
+            if (m_MainPanel != null) m_MainPanel.SetActive(true);
+            if (m_DestinationListPanel != null) m_DestinationListPanel.SetActive(true);
+            if (m_NavigationPanel != null) m_NavigationPanel.SetActive(false);
         }
 
         /// <summary>
@@ -220,10 +275,9 @@ namespace IndoorNavigation.UI
         /// </summary>
         private void ShowNavigationConfirmPanel()
         {
-            if (m_MainPanel != null)
-                m_MainPanel.SetActive(true);
-            if (m_DestinationListPanel != null)
-                m_DestinationListPanel.SetActive(false);
+            if (m_MainPanel != null) m_MainPanel.SetActive(true);
+            if (m_DestinationListPanel != null) m_DestinationListPanel.SetActive(false);
+            if (m_NavigationPanel != null) m_NavigationPanel.SetActive(true); // <--- Assure-toi que cette ligne est bien à TRUE
         }
 
         /// <summary>
@@ -231,10 +285,9 @@ namespace IndoorNavigation.UI
         /// </summary>
         private void ShowNavigationPanel()
         {
-            if (m_MainPanel != null)
-                m_MainPanel.SetActive(true);
-            if (m_NavigationPanel != null)
-                m_NavigationPanel.SetActive(true);
+            if (m_MainPanel != null) m_MainPanel.SetActive(true);
+            if (m_DestinationListPanel != null) m_DestinationListPanel.SetActive(false);
+            if (m_NavigationPanel != null) m_NavigationPanel.SetActive(true);
         }
 
         /// <summary>
